@@ -1,0 +1,174 @@
+{% comment %}
+  Section: Comparison Table
+  Light background section with:
+  - Left: headline + short copy
+  - Right: comparison table (Your product vs competitor)
+  with check/X columns and product images
+{% endcomment %}
+
+<div class="comparison-section" id="comparison-{{ section.id }}">
+  <div class="comparison__container">
+
+    <!-- Left: Text -->
+    <div class="comparison__text">
+      <h2 class="comparison__heading">
+        {{ section.settings.heading_plain }}
+        <span class="comparison__heading--underline">{{ section.settings.heading_bold }}</span>
+      </h2>
+      {% for block in section.blocks %}
+        {% if block.type == 'text_line' %}
+          <p class="comparison__body" {{ block.shopify_attributes }}>{{ block.settings.text }}</p>
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    <!-- Right: Table -->
+    <div class="comparison__table-wrap">
+      <!-- Column headers (product images) -->
+      <div class="comparison__table-header">
+        <div class="comparison__col-label"></div>
+        <div class="comparison__col-header comparison__col-header--yours">
+          {% if section.settings.your_product_image %}
+            <img src="{{ section.settings.your_product_image | img_url: '80x80', crop: 'center' }}"
+                 alt="{{ section.settings.your_product_name | escape }}" loading="lazy">
+          {% endif %}
+        </div>
+        <div class="comparison__col-header comparison__col-header--theirs">
+          {% if section.settings.competitor_image %}
+            <img src="{{ section.settings.competitor_image | img_url: '80x80', crop: 'center' }}"
+                 alt="{{ section.settings.competitor_name | escape }}" loading="lazy">
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Rows -->
+      <div class="comparison__table-body">
+        {% for block in section.blocks %}
+          {% if block.type == 'row' %}
+            <div class="comparison__row" {{ block.shopify_attributes }}>
+              <div class="comparison__row-label">{{ block.settings.feature }}</div>
+              <div class="comparison__row-yours">
+                {% if block.settings.yours %}
+                  <span class="comparison__check" aria-label="Yes">
+                    <svg width="16" height="13" viewBox="0 0 16 13" fill="none">
+                      <path d="M1.5 6.5L6 11L14.5 1.5" stroke="#4a8bb5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                {% else %}
+                  <span class="comparison__cross" aria-label="No">✕</span>
+                {% endif %}
+              </div>
+              <div class="comparison__row-theirs">
+                {% if block.settings.theirs %}
+                  <span class="comparison__check" aria-label="Yes">
+                    <svg width="16" height="13" viewBox="0 0 16 13" fill="none">
+                      <path d="M1.5 6.5L6 11L14.5 1.5" stroke="#4a8bb5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </span>
+                {% else %}
+                  <span class="comparison__cross" aria-label="No">✕</span>
+                {% endif %}
+              </div>
+            </div>
+          {% endif %}
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Comparison Table",
+  "settings": [
+    {
+      "type": "text",
+      "id": "heading_plain",
+      "label": "Heading (plain part)",
+      "default": "WHY MEN "
+    },
+    {
+      "type": "text",
+      "id": "heading_bold",
+      "label": "Heading (bold/underlined part)",
+      "default": "SWITCH TO CLEARED"
+    },
+    {
+      "type": "image_picker",
+      "id": "your_product_image",
+      "label": "Your product image"
+    },
+    {
+      "type": "text",
+      "id": "your_product_name",
+      "label": "Your product name",
+      "default": "CLEARED Cream"
+    },
+    {
+      "type": "image_picker",
+      "id": "competitor_image",
+      "label": "Competitor image"
+    },
+    {
+      "type": "text",
+      "id": "competitor_name",
+      "label": "Competitor name",
+      "default": "Peptide Injections"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "text_line",
+      "name": "Body Text Line",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Text",
+          "default": "Most products irritate."
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "name": "Comparison Row",
+      "settings": [
+        {
+          "type": "text",
+          "id": "feature",
+          "label": "Feature name",
+          "default": "Needle-free"
+        },
+        {
+          "type": "checkbox",
+          "id": "yours",
+          "label": "Your product has it",
+          "default": true
+        },
+        {
+          "type": "checkbox",
+          "id": "theirs",
+          "label": "Competitor has it",
+          "default": false
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Comparison Table",
+      "blocks": [
+        { "type": "text_line", "settings": { "text": "Most products irritate." } },
+        { "type": "text_line", "settings": { "text": "Others underperform." } },
+        { "type": "text_line", "settings": { "text": "CLEARED delivers visible repair without wrecking your skin barrier." } },
+        { "type": "row", "settings": { "feature": "Needle-free", "yours": true, "theirs": false } },
+        { "type": "row", "settings": { "feature": "Daily Use", "yours": true, "theirs": false } },
+        { "type": "row", "settings": { "feature": "Dermatologist Developed", "yours": true, "theirs": false } },
+        { "type": "row", "settings": { "feature": "Hydrates Skin", "yours": true, "theirs": false } },
+        { "type": "row", "settings": { "feature": "No Harsh Chemicals", "yours": true, "theirs": false } }
+      ]
+    }
+  ]
+}
+{% endschema %}

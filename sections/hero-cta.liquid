@@ -1,0 +1,99 @@
+{% comment %}
+  Section: Hero CTA (Dark)
+  Full dark navy background with:
+  - Large CTA button (outlined, glowing)
+  - 3 product images arranged in a fan/arc layout
+{% endcomment %}
+
+<div class="hero-cta-section" id="hero-cta-{{ section.id }}">
+  <div class="hero-cta__inner">
+
+    <a href="{{ section.settings.button_link }}" class="hero-cta__button">
+      {{ section.settings.button_text }}
+    </a>
+
+    <div class="hero-cta__products">
+      {% if section.settings.product_image_1 %}
+        <div class="hero-cta__product hero-cta__product--left">
+          <img src="{{ section.settings.product_image_1 | img_url: '300x300', crop: 'center' }}"
+               alt="{{ section.settings.product_alt_1 | escape }}" loading="lazy">
+          <button class="hero-cta__add-btn" aria-label="Add to cart">+</button>
+        </div>
+      {% endif %}
+
+      {% if section.settings.product_image_2 %}
+        <div class="hero-cta__product hero-cta__product--center">
+          <img src="{{ section.settings.product_image_2 | img_url: '300x300', crop: 'center' }}"
+               alt="{{ section.settings.product_alt_2 | escape }}" loading="lazy">
+          <button class="hero-cta__add-btn" aria-label="Add to cart">+</button>
+        </div>
+      {% endif %}
+
+      {% if section.settings.product_image_3 %}
+        <div class="hero-cta__product hero-cta__product--right">
+          <img src="{{ section.settings.product_image_3 | img_url: '300x300', crop: 'center' }}"
+               alt="{{ section.settings.product_alt_3 | escape }}" loading="lazy">
+          <button class="hero-cta__add-btn" aria-label="Add to cart">+</button>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Hero CTA (Dark)",
+  "settings": [
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "GET CLEARED"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "image_picker",
+      "id": "product_image_1",
+      "label": "Product image (left)"
+    },
+    {
+      "type": "text",
+      "id": "product_alt_1",
+      "label": "Alt text (left image)",
+      "default": "CLEARED Cream"
+    },
+    {
+      "type": "image_picker",
+      "id": "product_image_2",
+      "label": "Product image (center)"
+    },
+    {
+      "type": "text",
+      "id": "product_alt_2",
+      "label": "Alt text (center image)",
+      "default": "CLEARED Cream"
+    },
+    {
+      "type": "image_picker",
+      "id": "product_image_3",
+      "label": "Product image (right)"
+    },
+    {
+      "type": "text",
+      "id": "product_alt_3",
+      "label": "Alt text (right image)",
+      "default": "CLEARED Cream"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero CTA (Dark)"
+    }
+  ]
+}
+{% endschema %}

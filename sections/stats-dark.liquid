@@ -1,0 +1,99 @@
+{% comment %}
+  Section: Dark Stats
+  Dark navy background with large percentage statistics
+  and a wave SVG divider at the bottom.
+{% endcomment %}
+
+<div class="stats-dark-section" id="stats-dark-{{ section.id }}">
+  <div class="stats-dark__inner">
+
+    <div class="stats-dark__list">
+      {% for block in section.blocks %}
+        {% if block.type == 'stat' %}
+          <div class="stat-row" {{ block.shopify_attributes }}>
+            <span class="stat-row__percent">{{ block.settings.percent }}</span>
+            <p class="stat-row__text">{{ block.settings.description }}</p>
+          </div>
+          {% unless forloop.last %}
+            <div class="stat-row__divider"></div>
+          {% endunless %}
+        {% endif %}
+      {% endfor %}
+    </div>
+
+    {% if section.settings.footnote != blank %}
+      <p class="stats-dark__footnote">{{ section.settings.footnote }}</p>
+    {% endif %}
+
+  </div>
+
+  <!-- Wave divider -->
+  <div class="stats-dark__wave" aria-hidden="true">
+    <svg viewBox="0 0 1440 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M0,60 C240,110 480,10 720,60 C960,110 1200,10 1440,60 L1440,120 L0,120 Z" fill="#b0b8c1" opacity="0.5"/>
+      <path d="M0,80 C200,30 500,120 800,70 C1100,20 1300,100 1440,80 L1440,120 L0,120 Z" fill="{{ section.settings.wave_color }}"/>
+    </svg>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Dark Stats Section",
+  "settings": [
+    {
+      "type": "color",
+      "id": "wave_color",
+      "label": "Wave fill color (matches next section)",
+      "default": "#f0f2f4"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "stat",
+      "name": "Statistic",
+      "settings": [
+        {
+          "type": "text",
+          "id": "percent",
+          "label": "Percentage",
+          "default": "96%"
+        },
+        {
+          "type": "text",
+          "id": "description",
+          "label": "Description",
+          "default": "noticed visibly reduced redness and irritation within the first few weeks."
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Dark Stats Section",
+      "blocks": [
+        {
+          "type": "stat",
+          "settings": {
+            "percent": "96%",
+            "description": "noticed visibly reduced redness and irritation within the first few weeks."
+          }
+        },
+        {
+          "type": "stat",
+          "settings": {
+            "percent": "92%",
+            "description": "said their skin felt stronger and more hydrated without feeling greasy."
+          }
+        },
+        {
+          "type": "stat",
+          "settings": {
+            "percent": "90%",
+            "description": "reported smoother texture and less noticeable acne scarring."
+          }
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

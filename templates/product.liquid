@@ -1,0 +1,14 @@
+{% comment %}
+  Template: product.liquid
+  Renders the full product page using custom sections.
+  Include this in your theme via the Shopify theme editor or
+  copy into templates/product.json for Online Store 2.0.
+{% endcomment %}
+
+<link rel="stylesheet" href="{{ 'theme-custom.css' | asset_url }}">
+
+{% section 'product-bundle' %}
+{% section 'hero-cta' %}
+{% section 'stats-dark' %}
+{% section 'comparison-table' %}
+{% section 'before-after' %}

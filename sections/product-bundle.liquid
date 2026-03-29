@@ -1,0 +1,386 @@
+{% comment %}
+  Section: Product Bundle Selector
+  Reproduces the Cleared-style product page with:
+  - Image gallery
+  - Star rating badge
+  - Bullet benefit list
+  - Quantity/bundle selector with countdown timer
+  - Subscribe & Save
+  - Buy Now CTA
+  - Trust badges
+{% endcomment %}
+
+<div class="product-bundle-section" id="product-bundle-{{ section.id }}">
+  <div class="product-bundle__container">
+
+    <!-- LEFT: Image Gallery -->
+    <div class="product-bundle__gallery">
+      <div class="gallery__main-image">
+        {% if product.featured_image %}
+          <img
+            id="main-product-image"
+            src="{{ product.featured_image | img_url: '800x800' }}"
+            alt="{{ product.featured_image.alt | escape }}"
+            loading="eager"
+          >
+        {% else %}
+          <div class="gallery__placeholder">{{ 'product-1' | placeholder_svg_tag }}</div>
+        {% endif %}
+      </div>
+
+      {% if product.images.size > 1 %}
+        <div class="gallery__thumbnails">
+          <button class="gallery__arrow gallery__arrow--prev" aria-label="Previous image">&#8249;</button>
+          <div class="gallery__thumbnails-track">
+            {% for image in product.images %}
+              <button
+                class="gallery__thumb{% if forloop.first %} gallery__thumb--active{% endif %}"
+                data-src="{{ image | img_url: '800x800' }}"
+                aria-label="View image {{ forloop.index }}"
+              >
+                <img src="{{ image | img_url: '150x150', crop: 'center' }}" alt="{{ image.alt | escape }}" loading="lazy">
+              </button>
+            {% endfor %}
+          </div>
+          <button class="gallery__arrow gallery__arrow--next" aria-label="Next image">&#8250;</button>
+        </div>
+      {% endif %}
+    </div>
+
+    <!-- RIGHT: Product Info -->
+    <div class="product-bundle__info">
+
+      <!-- Rating Badge -->
+      <div class="product-bundle__rating">
+        <div class="rating__stars" aria-label="{{ section.settings.rating_value }} out of 5 stars">
+          {% assign full_stars = section.settings.rating_value | floor %}
+          {% assign decimal = section.settings.rating_value | minus: full_stars %}
+          {% for i in (1..5) %}
+            {% if i <= full_stars %}
+              <span class="star star--full">★</span>
+            {% elsif i == full_stars | plus: 1 and decimal >= 0.5 %}
+              <span class="star star--half">★</span>
+            {% else %}
+              <span class="star star--empty">★</span>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <span class="rating__text">Rated {{ section.settings.rating_value }}/5 from {{ section.settings.rating_count }} happy customers</span>
+      </div>
+
+      <!-- Product Title -->
+      <h1 class="product-bundle__title">{{ product.title }}</h1>
+
+      <!-- Benefit Bullets -->
+      {% if section.blocks.size > 0 %}
+        <ul class="product-bundle__benefits">
+          {% for block in section.blocks %}
+            {% if block.type == 'benefit' %}
+              <li class="benefit-item" {{ block.shopify_attributes }}>
+                <span class="benefit-item__icon">
+                  <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                    <circle cx="9" cy="9" r="8.5" stroke="#4a8bb5" stroke-width="1"/>
+                    <path d="M5 9l3 3 5-5" stroke="#4a8bb5" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </span>
+                <span>{{ block.settings.text }}</span>
+              </li>
+            {% endif %}
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      <hr class="product-bundle__divider">
+
+      <!-- Quantity Selector Header -->
+      <p class="product-bundle__select-label">Select Quantity</p>
+
+      <!-- Countdown Timer -->
+      {% if section.settings.show_countdown %}
+        <div class="product-bundle__countdown">
+          <span class="countdown__label">Hurry! Offer expires in</span>
+          <span class="countdown__timer" id="countdown-timer-{{ section.id }}" data-minutes="{{ section.settings.countdown_minutes }}">
+            <span class="countdown__value">--</span>:<span class="countdown__value">--</span>
+          </span>
+          <span class="countdown__emoji">🔥</span>
+        </div>
+      {% endif %}
+
+      <!-- Bundle Options -->
+      <div class="bundle-options" role="radiogroup" aria-label="Select bundle">
+        {% for variant in product.variants %}
+          <div class="bundle-option{% if forloop.index == 2 %} bundle-option--featured{% endif %}"
+               data-variant-id="{{ variant.id }}"
+               data-price="{{ variant.price | money_without_trailing_zeros }}"
+               data-compare-price="{{ variant.compare_at_price | money_without_trailing_zeros }}"
+               role="radio"
+               tabindex="0"
+               aria-checked="{% if forloop.index == 2 %}true{% else %}false{% endif %}">
+
+            <div class="bundle-option__main">
+              <div class="bundle-option__left">
+                <div class="bundle-option__radio">
+                  <span class="radio-dot"></span>
+                </div>
+                <img class="bundle-option__img"
+                     src="{{ product.featured_image | img_url: '80x80', crop: 'center' }}"
+                     alt="{{ product.title | escape }}"
+                     loading="lazy">
+                <div class="bundle-option__details">
+                  <span class="bundle-option__name">{{ variant.title }}</span>
+                  {% assign save_pct = variant.compare_at_price | minus: variant.price | times: 100 | divided_by: variant.compare_at_price %}
+                  {% if save_pct > 0 %}
+                    <span class="bundle-option__save">YOU SAVE {{ save_pct }}%</span>
+                  {% endif %}
+                </div>
+              </div>
+              <div class="bundle-option__right">
+                <span class="bundle-option__price">{{ variant.price | money }}</span>
+                {% if variant.compare_at_price > variant.price %}
+                  <span class="bundle-option__compare-price">{{ variant.compare_at_price | money }}</span>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Free Gifts (set per block) -->
+            {% for block in section.blocks %}
+              {% if block.type == 'bundle_gift' and block.settings.variant_index == forloop.parentloop.index %}
+                <div class="bundle-option__gift" {{ block.shopify_attributes }}>
+                  <img src="{{ block.settings.gift_image | img_url: '60x60', crop: 'center' }}" alt="{{ block.settings.gift_name }}" loading="lazy">
+                  <span class="gift__label">+ FREE {{ block.settings.gift_name }}</span>
+                  <span class="gift__value">{{ block.settings.gift_value | money }}</span>
+                </div>
+              {% endif %}
+            {% endfor %}
+
+          </div>
+        {% endfor %}
+      </div>
+
+      <!-- Subscribe & Save -->
+      {% if section.settings.show_subscribe %}
+        <div class="product-bundle__subscribe">
+          <label class="subscribe-checkbox">
+            <input type="checkbox" id="subscribe-toggle-{{ section.id }}" checked>
+            <span class="subscribe-checkbox__box">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                <path d="M1 5l3.5 3.5L11 1" stroke="#4a8bb5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </span>
+            <div class="subscribe-checkbox__text">
+              <span class="subscribe__title">{{ section.settings.subscribe_title }}</span>
+              <span class="subscribe__perks">{{ section.settings.subscribe_perks }}</span>
+            </div>
+          </label>
+        </div>
+      {% endif %}
+
+      <!-- Buy Now Button -->
+      <button class="product-bundle__buy-btn" id="add-to-cart-{{ section.id }}" type="button">
+        {{ section.settings.button_label }}
+      </button>
+
+      <!-- Trust Badges -->
+      <div class="product-bundle__trust-badges">
+        <div class="trust-badge">
+          <div class="trust-badge__icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="14.5" stroke="#1a2332" stroke-width="1.5"/>
+              <path d="M8 16l5 5 11-10" stroke="#1a2332" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M22 10c0 0-2-2-6-2s-6 2-6 2v6l6 4 6-4V10z" stroke="#1a2332" stroke-width="1.2"/>
+            </svg>
+          </div>
+          <span>Free Worldwide<br>Shipping</span>
+        </div>
+        <div class="trust-badge">
+          <div class="trust-badge__icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="14.5" stroke="#1a2332" stroke-width="1.5"/>
+              <rect x="10" y="13" width="12" height="9" rx="1.5" stroke="#1a2332" stroke-width="1.5"/>
+              <path d="M13 13v-2a3 3 0 016 0v2" stroke="#1a2332" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <span>Secure<br>Checkout</span>
+        </div>
+        <div class="trust-badge">
+          <div class="trust-badge__icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+              <circle cx="16" cy="16" r="14.5" stroke="#1a2332" stroke-width="1.5"/>
+              <path d="M22 10c-2-1.5-4-2-6-2-4.4 0-8 3.6-8 8s3.6 8 8 8 8-3.6 8-8" stroke="#1a2332" stroke-width="1.5" stroke-linecap="round"/>
+              <path d="M18 10l4 0 0 4" stroke="#1a2332" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <span>30-Day Money<br>Back Guarantee</span>
+        </div>
+      </div>
+
+    </div><!-- /.product-bundle__info -->
+  </div><!-- /.product-bundle__container -->
+</div>
+
+<script>
+(function() {
+  // ---- Gallery ----
+  const mainImg = document.getElementById('main-product-image');
+  document.querySelectorAll('#product-bundle-{{ section.id }} .gallery__thumb').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (mainImg) mainImg.src = this.dataset.src;
+      document.querySelectorAll('#product-bundle-{{ section.id }} .gallery__thumb').forEach(function(b) {
+        b.classList.remove('gallery__thumb--active');
+      });
+      this.classList.add('gallery__thumb--active');
+    });
+  });
+
+  // ---- Bundle option selection ----
+  const bundleOptions = document.querySelectorAll('#product-bundle-{{ section.id }} .bundle-option');
+  bundleOptions.forEach(function(option) {
+    option.addEventListener('click', function() {
+      bundleOptions.forEach(function(o) {
+        o.classList.remove('bundle-option--selected');
+        o.setAttribute('aria-checked', 'false');
+      });
+      this.classList.add('bundle-option--selected');
+      this.setAttribute('aria-checked', 'true');
+    });
+    if (option.getAttribute('aria-checked') === 'true') {
+      option.classList.add('bundle-option--selected');
+    }
+  });
+
+  // ---- Countdown Timer ----
+  var timerEl = document.getElementById('countdown-timer-{{ section.id }}');
+  if (timerEl) {
+    var totalSeconds = parseInt(timerEl.dataset.minutes, 10) * 60;
+    var values = timerEl.querySelectorAll('.countdown__value');
+    function updateTimer() {
+      if (totalSeconds <= 0) { totalSeconds = parseInt(timerEl.dataset.minutes, 10) * 60; }
+      var m = Math.floor(totalSeconds / 60);
+      var s = totalSeconds % 60;
+      if (values[0]) values[0].textContent = String(m).padStart(2, '0');
+      if (values[1]) values[1].textContent = String(s).padStart(2, '0');
+      totalSeconds--;
+    }
+    updateTimer();
+    setInterval(updateTimer, 1000);
+  }
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Product Bundle",
+  "settings": [
+    {
+      "type": "range",
+      "id": "rating_value",
+      "label": "Rating (e.g. 4.7)",
+      "min": 1,
+      "max": 5,
+      "step": 0.1,
+      "default": 4.7
+    },
+    {
+      "type": "text",
+      "id": "rating_count",
+      "label": "Rating count text",
+      "default": "50,000+"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_countdown",
+      "label": "Show countdown timer",
+      "default": true
+    },
+    {
+      "type": "range",
+      "id": "countdown_minutes",
+      "label": "Countdown duration (minutes)",
+      "min": 1,
+      "max": 60,
+      "step": 1,
+      "default": 10
+    },
+    {
+      "type": "checkbox",
+      "id": "show_subscribe",
+      "label": "Show subscribe & save",
+      "default": true
+    },
+    {
+      "type": "text",
+      "id": "subscribe_title",
+      "label": "Subscribe title",
+      "default": "Save 25% With Automatic Refills"
+    },
+    {
+      "type": "text",
+      "id": "subscribe_perks",
+      "label": "Subscribe perks",
+      "default": "Zero Commitment | Exclusive Discounts | Cancel Anytime"
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "BUY NOW"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "benefit",
+      "name": "Benefit Bullet",
+      "settings": [
+        {
+          "type": "text",
+          "id": "text",
+          "label": "Benefit text",
+          "default": "Clears breakouts and evens skin tone over time."
+        }
+      ]
+    },
+    {
+      "type": "bundle_gift",
+      "name": "Bundle Free Gift",
+      "settings": [
+        {
+          "type": "range",
+          "id": "variant_index",
+          "label": "Show on variant index (1, 2, 3...)",
+          "min": 1,
+          "max": 10,
+          "step": 1,
+          "default": 2
+        },
+        {
+          "type": "image_picker",
+          "id": "gift_image",
+          "label": "Gift image"
+        },
+        {
+          "type": "text",
+          "id": "gift_name",
+          "label": "Gift name",
+          "default": "Anti Bacterial Silk Pillowcase"
+        },
+        {
+          "type": "text",
+          "id": "gift_value",
+          "label": "Gift value",
+          "default": "17.95"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Product Bundle",
+      "blocks": [
+        { "type": "benefit", "settings": { "text": "Clears breakouts, fades acne marks, and even skin tone over time." } },
+        { "type": "benefit", "settings": { "text": "Supports firmer-looking skin and smoother texture as visible signs of aging appear." } },
+        { "type": "benefit", "settings": { "text": "Powered by GHK-Cu, the only peptide proven to work effectively when applied topically." } }
+      ]
+    }
+  ]
+}
+{% endschema %}
