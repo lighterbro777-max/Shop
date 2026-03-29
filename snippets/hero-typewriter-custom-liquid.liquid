@@ -1,0 +1,210 @@
+{% comment %}
+  HERO TYPEWRITER — Custom Liquid
+  Coller dans : Theme Editor → Add section → Custom Liquid
+  Remplace les variables entre {{ }} par tes vraies valeurs ou garde les defaults.
+{% endcomment %}
+
+<style>
+.hero-tw {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: #0d1b2a;
+}
+
+.hero-tw__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.hero-tw__bg img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center right;
+}
+
+/* Dégradé : texte lisible à gauche, image visible à droite */
+.hero-tw__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to right,
+    rgba(13,27,42,0.92) 0%,
+    rgba(13,27,42,0.70) 38%,
+    rgba(13,27,42,0.15) 65%,
+    rgba(13,27,42,0.00) 100%
+  );
+}
+
+.hero-tw__content {
+  position: relative;
+  z-index: 2;
+  padding: 80px clamp(24px, 6vw, 100px);
+  max-width: 560px;
+}
+
+.hero-tw__heading {
+  font-size: clamp(28px, 4vw, 46px);
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.25;
+  margin: 0 0 20px;
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+}
+
+/* Le curseur clignotant */
+.hero-tw__cursor {
+  display: inline-block;
+  color: #6ab4e8;
+  font-weight: 300;
+  margin-left: 1px;
+  transition: opacity 0.1s;
+}
+.hero-tw__cursor--hide { opacity: 0; }
+
+.hero-tw__subtitle {
+  font-size: 15px;
+  color: rgba(255,255,255,0.70);
+  line-height: 1.65;
+  margin: 0 0 36px;
+  max-width: 440px;
+}
+
+.hero-tw__btn {
+  display: inline-block;
+  padding: 13px 36px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  border: 1.5px solid rgba(255,255,255,0.7);
+  border-radius: 6px;
+  background: transparent;
+  text-decoration: none;
+  transition: background 0.25s, border-color 0.25s;
+  cursor: pointer;
+}
+.hero-tw__btn:hover {
+  background: rgba(255,255,255,0.10);
+  border-color: #ffffff;
+}
+
+@media (max-width: 768px) {
+  .hero-tw { min-height: 80vh; }
+  .hero-tw__overlay {
+    background: linear-gradient(
+      to bottom,
+      rgba(13,27,42,0.55) 0%,
+      rgba(13,27,42,0.90) 55%,
+      rgba(13,27,42,0.98) 100%
+    );
+  }
+  .hero-tw__bg img { object-position: top center; }
+  .hero-tw__content {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    max-width: 100%;
+    padding: 40px 24px;
+  }
+  .hero-tw__heading {
+    font-size: clamp(22px, 6vw, 32px);
+    white-space: normal;
+  }
+}
+</style>
+
+<section class="hero-tw" id="hero-tw-1">
+
+  <!-- 🖼️ Remplace l'URL par l'URL de ton image de fond (produit) -->
+  <div class="hero-tw__bg">
+    <img
+      src="{{ section.settings.bg_image | img_url: '1800x900', crop: 'center' }}"
+      alt=""
+      role="presentation"
+      loading="eager"
+    >
+  </div>
+
+  <div class="hero-tw__overlay"></div>
+
+  <div class="hero-tw__content">
+
+    <!-- Texte fixe avant la partie animée -->
+    <h1 class="hero-tw__heading">
+      Powered by <span id="tw-typed" aria-live="polite"></span><span class="hero-tw__cursor" id="tw-cursor" aria-hidden="true">|</span>
+    </h1>
+
+    <p class="hero-tw__subtitle">
+      No other skincare formula works like this. Clinically supported ingredients. Real skin repair.
+    </p>
+
+    <a href="/collections/all" class="hero-tw__btn">Shop Now</a>
+
+  </div>
+</section>
+
+<script>
+(function () {
+  // ✏️ Modifie ces phrases selon ton produit
+  var phrases = [
+    'GHK-CU Complex',
+    'Beef Tallow',
+    'Peptide Science',
+    'Real Ingredients'
+  ];
+
+  var TYPING_SPEED  = 80;   // ms entre chaque caractère (plus petit = plus rapide)
+  var ERASING_SPEED = 40;   // ms entre chaque effacement
+  var PAUSE_TYPED   = 2000; // ms d'attente après avoir fini de taper
+  var PAUSE_ERASED  = 500;  // ms d'attente après avoir tout effacé
+
+  var el      = document.getElementById('tw-typed');
+  var cursor  = document.getElementById('tw-cursor');
+  if (!el) return;
+
+  var phraseIndex = 0;
+  var charIndex   = 0;
+  var isErasing   = false;
+
+  function tick() {
+    var current = phrases[phraseIndex] || '';
+
+    if (!isErasing) {
+      charIndex++;
+      el.textContent = current.substring(0, charIndex);
+
+      if (charIndex === current.length) {
+        isErasing = true;
+        setTimeout(tick, PAUSE_TYPED);
+        return;
+      }
+      setTimeout(tick, TYPING_SPEED);
+
+    } else {
+      charIndex--;
+      el.textContent = current.substring(0, charIndex);
+
+      if (charIndex === 0) {
+        isErasing   = false;
+        phraseIndex = (phraseIndex + 1) % phrases.length;
+        setTimeout(tick, PAUSE_ERASED);
+        return;
+      }
+      setTimeout(tick, ERASING_SPEED);
+    }
+  }
+
+  // Curseur clignotant
+  setInterval(function () {
+    cursor && cursor.classList.toggle('hero-tw__cursor--hide');
+  }, 530);
+
+  setTimeout(tick, 800);
+})();
+</script>
