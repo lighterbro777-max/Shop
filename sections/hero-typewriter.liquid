@@ -1,0 +1,195 @@
+{% comment %}
+  Section: Hero Typewriter
+  Full-screen dark hero with:
+  - Background image (product shot)
+  - Typewriter cycling text effect on the headline
+  - Subtitle + CTA button
+{% endcomment %}
+
+<section class="hero-typewriter" id="hero-typewriter-{{ section.id }}">
+
+  <!-- Background image -->
+  {% if section.settings.bg_image %}
+    <div class="hero-tw__bg">
+      <img
+        src="{{ section.settings.bg_image | img_url: '1800x900', crop: 'center' }}"
+        alt=""
+        role="presentation"
+        loading="eager"
+      >
+    </div>
+  {% endif %}
+
+  <!-- Overlay gradient -->
+  <div class="hero-tw__overlay"></div>
+
+  <!-- Content -->
+  <div class="hero-tw__content">
+    <p class="hero-tw__eyebrow">{{ section.settings.eyebrow }}</p>
+
+    <h1 class="hero-tw__heading">
+      {{ section.settings.heading_prefix }}<span class="hero-tw__typed" id="tw-typed-{{ section.id }}" aria-live="polite"></span><span class="hero-tw__cursor" aria-hidden="true">|</span>
+    </h1>
+
+    <p class="hero-tw__subtitle">{{ section.settings.subtitle }}</p>
+
+    {% if section.settings.button_label != blank %}
+      <a href="{{ section.settings.button_link }}" class="hero-tw__btn">
+        {{ section.settings.button_label }}
+      </a>
+    {% endif %}
+  </div>
+
+</section>
+
+<script>
+(function () {
+  var el = document.getElementById('tw-typed-{{ section.id }}');
+  var cursor = document.querySelector('#hero-typewriter-{{ section.id }} .hero-tw__cursor');
+  if (!el) return;
+
+  // Phrases to cycle through — edit via section settings (passed as JSON)
+  var phrases = {{ section.settings.typewriter_phrases | split: '|' | json }};
+  if (!phrases || phrases.length === 0) {
+    phrases = ['GHK-CU Complex', 'Beef Tallow', 'Peptide Science'];
+  }
+
+  var TYPING_SPEED   = {{ section.settings.typing_speed }};   // ms per character
+  var ERASING_SPEED  = {{ section.settings.erasing_speed }};  // ms per character
+  var PAUSE_TYPED    = {{ section.settings.pause_after_type }}; // ms pause when fully typed
+  var PAUSE_ERASED   = {{ section.settings.pause_after_erase }}; // ms pause when fully erased
+
+  var phraseIndex = 0;
+  var charIndex   = 0;
+  var isErasing   = false;
+
+  function tick() {
+    var current = phrases[phraseIndex] || '';
+
+    if (!isErasing) {
+      // Typing
+      charIndex++;
+      el.textContent = current.substring(0, charIndex);
+
+      if (charIndex === current.length) {
+        // Fully typed — pause then start erasing
+        isErasing = true;
+        setTimeout(tick, PAUSE_TYPED);
+        return;
+      }
+      setTimeout(tick, TYPING_SPEED);
+
+    } else {
+      // Erasing
+      charIndex--;
+      el.textContent = current.substring(0, charIndex);
+
+      if (charIndex === 0) {
+        // Fully erased — move to next phrase
+        isErasing   = false;
+        phraseIndex = (phraseIndex + 1) % phrases.length;
+        setTimeout(tick, PAUSE_ERASED);
+        return;
+      }
+      setTimeout(tick, ERASING_SPEED);
+    }
+  }
+
+  // Cursor blink
+  setInterval(function () {
+    if (cursor) cursor.classList.toggle('hero-tw__cursor--hide');
+  }, 530);
+
+  // Start after a short delay
+  setTimeout(tick, 600);
+})();
+</script>
+
+{% schema %}
+{
+  "name": "Hero Typewriter",
+  "settings": [
+    {
+      "type": "image_picker",
+      "id": "bg_image",
+      "label": "Background image"
+    },
+    {
+      "type": "text",
+      "id": "eyebrow",
+      "label": "Eyebrow text (above heading)",
+      "default": ""
+    },
+    {
+      "type": "text",
+      "id": "heading_prefix",
+      "label": "Heading prefix (before animated text)",
+      "default": "Powered by "
+    },
+    {
+      "type": "textarea",
+      "id": "typewriter_phrases",
+      "label": "Typewriter phrases (separate with |)",
+      "default": "GHK-CU Complex|Beef Tallow|Peptide Science|Real Science"
+    },
+    {
+      "type": "text",
+      "id": "subtitle",
+      "label": "Subtitle",
+      "default": "No other skincare formula works like this. Clinically supported ingredients. Real skin repair."
+    },
+    {
+      "type": "text",
+      "id": "button_label",
+      "label": "Button label",
+      "default": "Shop Now"
+    },
+    {
+      "type": "url",
+      "id": "button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "range",
+      "id": "typing_speed",
+      "label": "Typing speed (ms per character)",
+      "min": 30,
+      "max": 200,
+      "step": 10,
+      "default": 80
+    },
+    {
+      "type": "range",
+      "id": "erasing_speed",
+      "label": "Erasing speed (ms per character)",
+      "min": 20,
+      "max": 150,
+      "step": 10,
+      "default": 40
+    },
+    {
+      "type": "range",
+      "id": "pause_after_type",
+      "label": "Pause after fully typed (ms)",
+      "min": 500,
+      "max": 5000,
+      "step": 250,
+      "default": 2000
+    },
+    {
+      "type": "range",
+      "id": "pause_after_erase",
+      "label": "Pause after fully erased (ms)",
+      "min": 200,
+      "max": 2000,
+      "step": 100,
+      "default": 500
+    }
+  ],
+  "presets": [
+    {
+      "name": "Hero Typewriter"
+    }
+  ]
+}
+{% endschema %}
