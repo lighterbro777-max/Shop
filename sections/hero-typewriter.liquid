@@ -12,9 +12,10 @@
   {% if section.settings.bg_image %}
     <div class="hero-tw__bg">
       <img
-        src="{{ section.settings.bg_image | img_url: '1800x900', crop: 'center' }}"
-        alt=""
-        role="presentation"
+        src="{{ section.settings.bg_image | image_url: width: 1800 }}"
+        alt="{{ section.settings.bg_image.alt | escape }}"
+        width="{{ section.settings.bg_image.width }}"
+        height="{{ section.settings.bg_image.height }}"
         loading="eager"
       >
     </div>
@@ -25,13 +26,17 @@
 
   <!-- Content -->
   <div class="hero-tw__content">
-    <p class="hero-tw__eyebrow">{{ section.settings.eyebrow }}</p>
+    {% if section.settings.eyebrow != blank %}
+      <p class="hero-tw__eyebrow">{{ section.settings.eyebrow }}</p>
+    {% endif %}
 
     <h1 class="hero-tw__heading">
       {{ section.settings.heading_prefix }}<span class="hero-tw__typed" id="tw-typed-{{ section.id }}" aria-live="polite"></span><span class="hero-tw__cursor" aria-hidden="true">|</span>
     </h1>
 
-    <p class="hero-tw__subtitle">{{ section.settings.subtitle }}</p>
+    {% if section.settings.subtitle != blank %}
+      <p class="hero-tw__subtitle">{{ section.settings.subtitle }}</p>
+    {% endif %}
 
     {% if section.settings.button_label != blank %}
       <a href="{{ section.settings.button_link }}" class="hero-tw__btn">
@@ -42,22 +47,142 @@
 
 </section>
 
+{% style %}
+  #hero-typewriter-{{ section.id }} {
+    position: relative;
+    width: 100%;
+    min-height: 100svh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: #020d1a;
+  }
+
+  #hero-typewriter-{{ section.id }} .hero-tw__bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+  }
+
+  #hero-typewriter-{{ section.id }} .hero-tw__bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center right;
+    display: block;
+  }
+
+  #hero-typewriter-{{ section.id }} .hero-tw__overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    background: linear-gradient(
+      to right,
+      rgba(2, 13, 26, 0.85) 0%,
+      rgba(2, 13, 26, 0.55) 50%,
+      rgba(2, 13, 26, 0.10) 100%
+    );
+  }
+
+  #hero-typewriter-{{ section.id }} .hero-tw__content {
+    position: relative;
+    z-index: 2;
+    max-width: 580px;
+    padding: 80px 5vw;
+  }
+
+  #hero-typewriter-{{ section.id }} .hero-tw__eyebrow {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.55);
+    margin: 0 0 20px;
+  }
+
+  #hero-typewriter-{{ section.id }} .hero-tw__heading {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 300;
+    line-height: 1.1;
+    color: #ffffff;
+    margin: 0 0 24px;
+    letter-spacing: -0.02em;
+  }
+
+  #hero-typewriter-{{ section.id }} .hero-tw__typed {
+    color: #7ecfff;
+    font-weight: 400;
+  }
+
+  #hero-typewriter-{{ section.id }} .hero-tw__cursor {
+    display: inline-block;
+    color: #7ecfff;
+    font-weight: 300;
+    margin-left: 2px;
+    transition: opacity 0.1s;
+  }
+
+  #hero-typewriter-{{ section.id }} .hero-tw__cursor--hide {
+    opacity: 0;
+  }
+
+  #hero-typewriter-{{ section.id }} .hero-tw__subtitle {
+    font-size: 15px;
+    font-weight: 400;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.65);
+    margin: 0 0 36px;
+    max-width: 440px;
+  }
+
+  #hero-typewriter-{{ section.id }} .hero-tw__btn {
+    display: inline-block;
+    padding: 14px 36px;
+    border: 1.5px solid rgba(255, 255, 255, 0.8);
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    background: transparent;
+    cursor: pointer;
+    transition: background 0.25s, color 0.25s, border-color 0.25s;
+  }
+
+  #hero-typewriter-{{ section.id }} .hero-tw__btn:hover {
+    background: #ffffff;
+    color: #020d1a;
+    border-color: #ffffff;
+  }
+
+  @media screen and (max-width: 749px) {
+    #hero-typewriter-{{ section.id }} .hero-tw__overlay {
+      background: rgba(2, 13, 26, 0.72);
+    }
+
+    #hero-typewriter-{{ section.id }} .hero-tw__content {
+      padding: 60px 24px;
+      max-width: 100%;
+    }
+  }
+{% endstyle %}
+
 <script>
 (function () {
   var el = document.getElementById('tw-typed-{{ section.id }}');
   var cursor = document.querySelector('#hero-typewriter-{{ section.id }} .hero-tw__cursor');
   if (!el) return;
 
-  // Phrases to cycle through — edit via section settings (passed as JSON)
   var phrases = {{ section.settings.typewriter_phrases | split: '|' | json }};
   if (!phrases || phrases.length === 0) {
     phrases = ['GHK-CU Complex', 'Beef Tallow', 'Peptide Science'];
   }
 
-  var TYPING_SPEED   = {{ section.settings.typing_speed }};   // ms per character
-  var ERASING_SPEED  = {{ section.settings.erasing_speed }};  // ms per character
-  var PAUSE_TYPED    = {{ section.settings.pause_after_type }}; // ms pause when fully typed
-  var PAUSE_ERASED   = {{ section.settings.pause_after_erase }}; // ms pause when fully erased
+  var TYPING_SPEED  = {{ section.settings.typing_speed }};
+  var ERASING_SPEED = {{ section.settings.erasing_speed }};
+  var PAUSE_TYPED   = {{ section.settings.pause_after_type }};
+  var PAUSE_ERASED  = {{ section.settings.pause_after_erase }};
 
   var phraseIndex = 0;
   var charIndex   = 0;
@@ -67,25 +192,20 @@
     var current = phrases[phraseIndex] || '';
 
     if (!isErasing) {
-      // Typing
       charIndex++;
       el.textContent = current.substring(0, charIndex);
 
       if (charIndex === current.length) {
-        // Fully typed — pause then start erasing
         isErasing = true;
         setTimeout(tick, PAUSE_TYPED);
         return;
       }
       setTimeout(tick, TYPING_SPEED);
-
     } else {
-      // Erasing
       charIndex--;
       el.textContent = current.substring(0, charIndex);
 
       if (charIndex === 0) {
-        // Fully erased — move to next phrase
         isErasing   = false;
         phraseIndex = (phraseIndex + 1) % phrases.length;
         setTimeout(tick, PAUSE_ERASED);
@@ -95,12 +215,10 @@
     }
   }
 
-  // Cursor blink
   setInterval(function () {
     if (cursor) cursor.classList.toggle('hero-tw__cursor--hide');
   }, 530);
 
-  // Start after a short delay
   setTimeout(tick, 600);
 })();
 </script>
@@ -117,8 +235,7 @@
     {
       "type": "text",
       "id": "eyebrow",
-      "label": "Eyebrow text (above heading)",
-      "default": ""
+      "label": "Eyebrow text (above heading)"
     },
     {
       "type": "text",
